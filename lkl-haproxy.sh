@@ -182,7 +182,7 @@ bind :::${port1} v4v6
 default_backend proxy-out
 
 backend proxy-out
-server server1 10.0.0.1 maxconn 20480\c" > haproxy.cfg
+server server1 192.168.254.1 maxconn 20480\c" > haproxy.cfg
 }
 
 config_haproxy_ports(){
@@ -202,17 +202,17 @@ bind :::${port1}-${port2} v4v6
 default_backend proxy-out
 
 backend proxy-out
-server server1 10.0.0.1 maxconn 20480\c" > haproxy.cfg
+server server1 192.168.254.1 maxconn 20480\c" > haproxy.cfg
 }
 
 config_redirect_single_port(){
-sed -i "20i\iptables -t nat -I PREROUTING -i $(awk '$2 == 00000000 { print $1 }' /proc/net/route) -p tcp --dport ${port1} -j DNAT --to-destination 10.0.0.2" redirect.sh
-sed -i "20i\ip6tables -t nat -I PREROUTING -i $(awk '$2 == 00000000 { print $1 }' /proc/net/route) -p tcp --dport ${port1} -j DNAT --to-destination fd00::2" redirect.sh
+sed -i "20i\iptables -t nat -I PREROUTING -i $(awk '$2 == 00000000 { print $1 }' /proc/net/route) -p tcp --dport ${port1} -j DNAT --to-destination 192.168.254.2" redirect.sh
+sed -i "20i\ip6tables -t nat -I PREROUTING -i $(awk '$2 == 00000000 { print $1 }' /proc/net/route) -p tcp --dport ${port1} -j DNAT --to-destination fd00:ffff::2" redirect.sh
 }
 
 config_redirect_ports(){
-sed -i "20i\iptables -t nat -I PREROUTING -i $(awk '$2 == 00000000 { print $1 }' /proc/net/route) -p tcp --dport ${port1}:${port2} -j DNAT --to-destination 10.0.0.2" redirect.sh
-sed -i "20i\ip6tables -t nat -I PREROUTING -i $(awk '$2 == 00000000 { print $1 }' /proc/net/route) -p tcp --dport ${port1}:${port2} -j DNAT --to-destination fd00::2" redirect.sh
+sed -i "20i\iptables -t nat -I PREROUTING -i $(awk '$2 == 00000000 { print $1 }' /proc/net/route) -p tcp --dport ${port1}:${port2} -j DNAT --to-destination 192.168.254.2" redirect.sh
+sed -i "20i\ip6tables -t nat -I PREROUTING -i $(awk '$2 == 00000000 { print $1 }' /proc/net/route) -p tcp --dport ${port1}:${port2} -j DNAT --to-destination fd00:ffff::2" redirect.sh
 }
 
 check_all(){
@@ -272,7 +272,7 @@ install(){
 }
 
 status(){
-	pingstatus=`ping 10.0.0.2 -c 3 | grep ttl`
+	pingstatus=`ping 192.168.254.2 -c 3 | grep ttl`
 	if [[ ! -z "${pingstatus}" ]]; then
 		echo -e "${Info} lkl-haproxy 正在运行 !"
 		else echo -e "${Error} lkl-haproxy 没有运行 !"
@@ -320,7 +320,7 @@ for ((i=0; i<${#REGEX[@]}; i++)); do
 done
 [[ -z $SYSTEM ]] && echo -e "不支持的 linux 发行版" && exit 1
 
-if ping 10.0.0.2 -c 2 >/dev/null 2>&1; then
+if ping 192.168.254.2 -c 2 >/dev/null 2>&1; then
 	echo -e "${Info} lkl-haproxy 正在运行 !\c" && read -rp " 卸载请按 y，按其他键退出: " CHOOSE
 	[[ $CHOOSE != [Yy] ]] && exit 0 || uninstall
 else 
